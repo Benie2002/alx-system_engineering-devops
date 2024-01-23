@@ -1,24 +1,26 @@
-reate Nginx configuration server via puppet
+#!/usr/bin/env bash
+# Install and configure HAproxy lb-01 server.
+sudo apt-get -y update
+apt-get -y install haproxy
 
-exec { 'update':
-  command => '/usr/bin/apt-get update',
-}
+# edit config file
+server_config=\
+"
+frontend  besthor_frontend
+        bind *:80
+        mode http
+        default_backend nmcleon_backend
+backend nmcleon_backend
+        balance roundrobin
+        server 342580-web-01 54.160.126.3 check
+        server 342580-web-02 100.26.234.54 check
+"
+echo "$server_config" | sudo tee -a /etc/haproxy/haproxy.cfg
 
-package { 'nginx':
-  ensure  => present,
-  name    => 'nginx',
-  require => Exec['update'],
-}
+echo "ENABLED=1" | sudo tee -a /etc/default/haproxy
 
-file_line { 'Add header':
-  ensure  => 'present',
-  path    => '/etc/nginx/sites-available/default',
-  after   => 'listen 80 default_server;',
-  line    => 'add_header X-Served-By $hostname;',
-  require => Package['nginx'],
-}
+# Test HAproxy configuration file
+sudo haproxy -c -f /etc/haproxy/haproxy.cfg
 
-service { 'nginx':
-  ensure  => running,
-  require => Package['nginx'],
-}
+# Restart Nginx service
+sudo service haproxy restart
