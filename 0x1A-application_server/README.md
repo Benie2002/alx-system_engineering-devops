@@ -134,4 +134,3 @@ Reconfigure web_dynamic/static/scripts/2-hbnb.js to the correct IP.
 Nginx must serve this page both locally and on its public IP on port 5003.
 Example
 # Placeholder for the example
-
